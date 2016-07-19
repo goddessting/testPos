@@ -92,4 +92,4 @@ let printReceipt = (tags) => {
   console.log(print);
 };
 
-module.exports = {printReceipt: printReceipt, buildCartItems: buildCartItems, buildReceiptItems:buildReceiptItems, buildReceipt: buildReceipt, buildPrint: buildPrint};
+module.exports = {printReceipt: printReceipt, loadAllItems: loadAllItems, loadPromotions: loadPromotions, buildCartItems: buildCartItems, buildReceiptItems:buildReceiptItems, buildReceipt: buildReceipt, buildPrint: buildPrint};
