@@ -267,7 +267,7 @@ it('the total should be 11', () => {
       total: 22.5,
       totalSaved: 0.00
     };
-    let receipt = tets.buildReceipt(receiptItems);
+    let receipt = test.buildReceipt(receiptItems);
 
     expect(receipt).toEqual(expectReceipt);
   });
