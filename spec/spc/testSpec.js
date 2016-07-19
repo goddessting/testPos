@@ -208,6 +208,69 @@ expect(receiptItems).toEqual(expectReceiptItems);
 });
 });
 
+it('the total should be 11', () => {
+    let receiptItems = [{
+      cartItem: {
+        item: {
+          barcode: 'ITEM000002',
+          name: '苹果',
+          unit: '斤',
+          price: 5.50
+        },
+        count: 3
+      },
+      subtotal: 16.5,
+      saved: 0.00
+    },
+      {
+        cartItem: {
+          item: {
+            barcode: 'ITEM000001',
+            name: '雪碧',
+            unit: '瓶',
+            price: 3.00
+          },
+          count: 2
+        },
+        subtotal: 6.00,
+        saved: 0.00
+      }];
+
+    let expectReceipt = {
+      receiptItem: [
+        {
+          cartItem: {
+            item: {
+              barcode: 'ITEM000002',
+              name: '苹果',
+              unit: '斤',
+              price: 5.50
+            },
+            count: 3
+          },
+          subtotal: 16.5,
+          saved: 0.00
+        },
+        {
+          cartItem: {
+            item: {
+              barcode: 'ITEM000001',
+              name: '雪碧',
+              unit: '瓶',
+              price: 3.00
+            },
+            count: 2
+          },
+          subtotal: 6.00,
+          saved: 0.00
+        }],
+      total: 22.5,
+      totalSaved: 0.00
+    };
+    let receipt = buildReceipt(receiptItems);
+
+    expect(receipt).toEqual(expectReceipt);
+  });
 
 it('should print correct text', () => {
 
