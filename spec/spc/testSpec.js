@@ -1,5 +1,5 @@
 'use strict';
-var test = require('../../src/main.js');
+let test = require('../../src/main.js');
 
 describe('pos', () => {
     let inputs;

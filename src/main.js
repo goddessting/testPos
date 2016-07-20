@@ -1,4 +1,5 @@
 'use strict';
+let fixtures = require('../spec/spc/fixtures.js');
 
 let buildCartItems = (tags, allItems) => {
     let cartItems = [];
@@ -31,8 +32,8 @@ let buildReceiptItems = (cartItems, promotions) => {
 };
 
 let getPromotionType = (barcode, promotions) => {
+  let promotion = promotions.find(promotion => promotion.barcodes.find(tag => tag === barcode));
 
-  let promotion = promotions.find(promotion => promotion.barcodes.includes(barcode));
   return promotion ? promotion.type : '';
 };
 
@@ -82,8 +83,8 @@ let buildPrint = (receipt) => {
 };
 
 let printReceipt = (tags) => {
-  let allItems = loadAllItems();
-  let promotions = loadPromotions();
+  let allItems = fixtures.loadAllItems();
+  let promotions = fixtures.loadPromotions();
 
   let cartItems = buildCartItems(tags, allItems);
   let receiptItems = buildReceiptItems(cartItems, promotions);
@@ -92,4 +93,4 @@ let printReceipt = (tags) => {
   console.log(print);
 };
 
-module.exports = {printReceipt: printReceipt, loadAllItems: loadAllItems, loadPromotions: loadPromotions, buildCartItems: buildCartItems, buildReceiptItems:buildReceiptItems, buildReceipt: buildReceipt, buildPrint: buildPrint};
+module.exports = {printReceipt: printReceipt,  buildCartItems: buildCartItems, buildReceiptItems:buildReceiptItems, buildReceipt: buildReceipt, buildPrint: buildPrint};
