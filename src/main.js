@@ -1,20 +1,31 @@
-'use strict';
-let fixtures = require('../spec/spc/fixtures.js');
+var fixtures = require('../spec/spc/fixtures.js');
 
-let buildCartItems = (tags, allItems) => {
-    let cartItems = [];
+var printReceipt = (tags) => {
+  var allItems = fixtures.loadAllItems();
+  var promotions = fixtures.loadPromotions();
 
-    for (let tag of tags) {
-        let splittedTag = tag.split('-');
-        let barcode = splittedTag[0];
-        let count = parseFloat(splittedTag[1] || 1);
+  var cartItems = buildCartItems(tags, allItems);
+  var receiptItems = buildReceiptItems(cartItems, promotions);
+  var receipt = buildReceipt(receiptItems);
+  var print = buildPrint(receipt, promotions);
 
-        let cartItem = cartItems.find(cartItem => cartItem.item.barcode === barcode);
+  console.log(print);
+};
+
+var buildCartItems = (tags, allItems) => {
+    var cartItems = [];
+
+    for (var tag of tags) {
+        var splittedTag = tag.split('-');
+        var barcode = splittedTag[0];
+        var count = parseFloat(splittedTag[1] || 1);
+
+        var cartItem = cartItems.find(cartItem => cartItem.item.barcode === barcode);
 
         if (cartItem) {
             cartItem.count += count;
         } else {
-            let item = allItems.find(item => item.barcode === barcode);
+            var item = allItems.find(item => item.barcode === barcode);
 
             cartItems.push({item: item, count: count});
         }
@@ -23,37 +34,44 @@ let buildCartItems = (tags, allItems) => {
     return cartItems;
 }
 
-let buildReceiptItems = (cartItems, promotions) => {
+var buildReceiptItems = (cartItems, promotions) => {
   return cartItems.map(cartItem => {
-    let promotionType = getPromotionType(cartItem.item.barcode, promotions);
-    let a = discount(cartItem, promotionType);
-    return {cartItem, subtotal: a[0], saved:a[1]}
+    var promotionType = getPromotionType(cartItem.item.barcode, promotions);
+    var a = discount(cartItem, promotionType);
+    var receiptItem = {cartItem, subtotal: a[0], saved: a[1]};
+
+    return {cartItem, subtotal: a[0], saved: a[1]}
   })
 };
 
-let getPromotionType = (barcode, promotions) => {
-  let promotion = promotions.find(promotion => promotion.barcodes.find(tag => tag === barcode));
+var getPromotionType = (barcode, promotions) => {
+  var promotion = promotions.find(promotion => promotion.barcodes.find(tag => tag === barcode));
 
   return promotion ? promotion.type : '';
 };
 
-let discount = (cartItem, getPromotionType) => {
-  let freeItemCount = 0;
-  if (getPromotionType === 'BUY_TWO_GET_ONE_FREE') {
-    freeItemCount = parseInt(cartItem.count / 3);
-  }
+var discount = (cartItem, promotionType) => {
+  var freeItemCount = 0;
+  var saved = 0;
+  var  subtotal = cartItem.count * cartItem.item.price;
 
-  let saved = freeItemCount * cartItem.item.price;
-  let subtotal = cartItem.count * cartItem.item.price - saved;
+  if (promotionType === 'BUY_TWO_GET_ONE_FREE') {
+    freeItemCount = parseInt(cartItem.count / 3);
+    saved = freeItemCount * cartItem.item.price;
+  }
+  else if(promotionType === 'A_95_PERCENT_CHARGE'){
+    saved = parseFloat((0.05 * cartItem.item.price * cartItem.count).toFixed(2));
+  }
+ subtotal -= saved;
 
   return [subtotal, saved];
 };
 
-let buildReceipt = (receiptItems) => {
-  let total = 0;
-  let totalSaved = 0;
+var buildReceipt = (receiptItems) => {
+  var total = 0;
+  var totalSaved = 0;
 
-  for (let receiptItem of receiptItems) {
+  for (var receiptItem of receiptItems) {
     total += receiptItem.subtotal;
     totalSaved += receiptItem.saved;
   }
@@ -61,36 +79,49 @@ let buildReceipt = (receiptItems) => {
   return {receiptItem: receiptItems, total: total, totalSaved: totalSaved};
 };
 
-let buildPrint = (receipt) => {
-  let receiptItems = receipt.receiptItem;
-  let print = `***<没钱赚商店>收据***
+var buildPrint = (receipt, promotions) => {
+  var receiptItems = receipt.receiptItem;
+var  print = `***<没钱赚商店>收据***
 `;
-  let total = 0;
-  let totalSaved = 0;
+var total = 0;
+var totalSaved = 0;
 
-  for (let receiptItem of receiptItems) {
-    print += `名称：${receiptItem.cartItem.item.name}，数量：${receiptItem.cartItem.count}${receiptItem.cartItem.item.unit}，单价：${receiptItem.cartItem.item.price.toFixed(2)}(元)，小计：${receiptItem.subtotal.toFixed(2)}(元)
+for (var receiptItem of receiptItems) {
+  var name = receiptItem.cartItem.item.name;
+  var count = receiptItem.cartItem.count;
+  var unit = receiptItem.cartItem.item.unit;
+  var price = receiptItem.cartItem.item.price.toFixed(2);
+  var subtotal = receiptItem.subtotal.toFixed(2);
+  var saved = receiptItem.saved.toFixed(2);
+
+  var promotion = (promotions.find(promotion => promotion.barcodes.find(tag => tag === receiptItem.cartItem.item.barcode)) || 'undefined');
+  var promotionType = promotion.type;
+
+  var freeItem = `----------------------
+买二赠一商品:
 `;
-    total += receiptItem.subtotal;
-    totalSaved += receiptItem.saved;
+
+  total += receiptItem.subtotal;
+  totalSaved += receiptItem.saved;
+
+  if(promotionType === 'A_95_PERCENT_CHARGE' && saved != '0.00'){
+  print += `名称：${name}，数量：${count}${unit}，单价：${price}(元)，小计：${subtotal}(元),节省${saved}(元)
+`;
+}else{
+print += `名称：${name}，数量：${count}${unit}，单价：${price}(元)，小计：${subtotal}(元)
+`;}
+  if(promotionType === 'BUY_TWO_GET_ONE_FREE' && saved != '0.00'){
+    freeItem += `名称:${receiptItem.cartItem.item.name},数量:${receiptItem.cartItem.count}${receiptItem.cartItem.item.unit}
+`;
   }
-  print += `----------------------
+}
+print += freeItem;
+print += `----------------------
 总计：${total.toFixed(2)}(元)
 节省：${totalSaved.toFixed(2)}(元)
 **********************`;
 
-  return print;
-};
-
-let printReceipt = (tags) => {
-  let allItems = fixtures.loadAllItems();
-  let promotions = fixtures.loadPromotions();
-
-  let cartItems = buildCartItems(tags, allItems);
-  let receiptItems = buildReceiptItems(cartItems, promotions);
-  let receipt = buildReceipt(receiptItems);
-  let print = buildPrint(receipt);
-  console.log(print);
+return print;
 };
 
 module.exports = {printReceipt: printReceipt,  buildCartItems: buildCartItems, buildReceiptItems:buildReceiptItems, buildReceipt: buildReceipt, buildPrint: buildPrint};

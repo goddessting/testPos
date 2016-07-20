@@ -50,6 +50,14 @@ function loadPromotions() {
         'ITEM000001',
         'ITEM000005'
       ]
+    },
+    {
+      type: 'A_95_PERCENT_CHARGE',
+      barcodes: [
+        'ITEM000001',
+        'ITEM000002',
+        'ITEM000005'
+      ]
     }
   ];
 }
